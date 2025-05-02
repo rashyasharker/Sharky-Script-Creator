@@ -90,6 +90,14 @@ export default function Home() {
 
   const isGenerating = isPending;
 
+  // --- Input Validation Logic ---
+  const handleGiftTargetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow only alphanumeric characters and remove spaces
+    const sanitizedValue = value.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
+    setGiftTarget(sanitizedValue);
+  };
+
   // --- Generate Script Logic ---
   const generateScript = async () => {
     setWebhookError(null);
@@ -118,6 +126,10 @@ export default function Home() {
      if (selectedFruits.length === 0) {
         toast({ title: 'Error', description: 'Please select at least one fruit.', variant: 'destructive' });
         return;
+    }
+    if (!giftTarget.trim()) {
+      toast({ title: 'Error', description: 'Gift Target username is required.', variant: 'destructive' });
+      return;
     }
 
     try {
@@ -361,7 +373,7 @@ export default function Home() {
                 type="text"
                 id="giftTarget"
                 value={giftTarget}
-                onChange={e => setGiftTarget(e.target.value)}
+                onChange={handleGiftTargetChange} // Use the validation handler
                 placeholder="Enter username to gift"
                 className="w-full p-3 bg-gray-900 border border-cyan-500/50 rounded-md text-gray-100 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
               />
