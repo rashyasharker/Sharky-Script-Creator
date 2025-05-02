@@ -93,8 +93,8 @@ export default function Home() {
   // --- Input Validation Logic ---
   const handleGiftTargetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Allow only alphanumeric characters and remove spaces
-    const sanitizedValue = value.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
+    // Allow only alphanumeric characters and underscore, and remove spaces
+    const sanitizedValue = value.replace(/\s+/g, '').replace(/[^a-zA-Z0-9_]/g, '');
     setGiftTarget(sanitizedValue);
   };
 
@@ -127,6 +127,7 @@ export default function Home() {
         toast({ title: 'Error', description: 'Please select at least one fruit.', variant: 'destructive' });
         return;
     }
+    // Ensure GiftTarget is not empty before generating the script
     if (!giftTarget.trim()) {
       toast({ title: 'Error', description: 'Gift Target username is required.', variant: 'destructive' });
       return;
